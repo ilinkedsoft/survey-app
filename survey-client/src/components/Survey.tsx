@@ -9,6 +9,7 @@ export const Survey: React.FC = () => {
   const [responses, setResponses] = useState<Record<number, string | string[]>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isReviewing, setIsReviewing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,6 +68,14 @@ export const Survey: React.FC = () => {
     }
   };
 
+  const handleReview = () => {
+    setIsReviewing(true);
+  };
+
+  const handleEdit = () => {
+    setIsReviewing(false);
+  };
+
   if (error) {
     return (
       <div className="text-center text-red-600 p-4">
@@ -108,6 +117,45 @@ export const Survey: React.FC = () => {
     );
   }
 
+  if (isReviewing) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Review Your Answers</h2>
+        <div className="space-y-6">
+          {questions.map((question, index) => (
+            <div key={question.id} className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Question {index + 1}: {question.title}
+              </h3>
+              <p className="text-gray-600 mb-4">{question.description}</p>
+              <div className="bg-gray-50 p-4 rounded">
+                <p className="text-gray-800">
+                  Your answer: {Array.isArray(responses[question.id]) 
+                    ? (responses[question.id] as string[]).join(', ')
+                    : responses[question.id]}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-between mt-8">
+          <button onClick={handleEdit} className="btn btn-secondary">
+            Edit Answers
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className={`btn btn-primary ${
+              isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Survey'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
 
@@ -143,14 +191,8 @@ export const Survey: React.FC = () => {
         </button>
 
         {currentStep === questions.length - 1 ? (
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className={`btn btn-primary ${
-              isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit Survey'}
+          <button onClick={handleReview} className="btn btn-primary">
+            Review Answers
           </button>
         ) : (
           <button onClick={handleNext} className="btn btn-primary">

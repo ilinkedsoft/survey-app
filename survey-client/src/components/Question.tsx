@@ -21,26 +21,29 @@ export const Question: React.FC<QuestionProps> = ({
           <textarea
             value={value || ''}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200"
             rows={question.options.multiline ? 4 : 1}
             maxLength={question.options.maxLength}
+            placeholder="Type your answer here..."
           />
         );
       
       case 'rating':
         return (
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-center space-x-6">
             {Array.from({ length: question.options.max - question.options.min + 1 }, (_, i) => i + question.options.min).map((rating) => (
-              <label key={rating} className="flex flex-col items-center">
+              <label key={rating} className="flex flex-col items-center cursor-pointer group">
                 <input
                   type="radio"
                   name={`question-${question.id}`}
                   value={rating}
                   checked={value === rating}
                   onChange={(e) => onChange(Number(e.target.value))}
-                  className="text-blue-500 focus:ring-blue-500"
+                  className="w-6 h-6 text-primary-500 border-gray-300 focus:ring-primary-500"
                 />
-                <span className="text-sm mt-1">{question.options.labels[rating]}</span>
+                <span className="mt-2 text-sm text-gray-600 group-hover:text-primary-500 transition-colors duration-200">
+                  {question.options.labels[rating]}
+                </span>
               </label>
             ))}
           </div>
@@ -48,18 +51,18 @@ export const Question: React.FC<QuestionProps> = ({
       
       case 'radio':
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {question.options.choices.map((choice) => (
-              <label key={choice} className="flex items-center space-x-2">
+              <label key={choice} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
                 <input
                   type="radio"
                   name={`question-${question.id}`}
                   value={choice}
                   checked={value === choice}
                   onChange={(e) => onChange(e.target.value)}
-                  className="text-blue-500 focus:ring-blue-500"
+                  className="w-5 h-5 text-primary-500 border-gray-300 focus:ring-primary-500"
                 />
-                <span>{choice}</span>
+                <span className="ml-3 text-gray-700">{choice}</span>
               </label>
             ))}
           </div>
@@ -67,9 +70,9 @@ export const Question: React.FC<QuestionProps> = ({
       
       case 'checkbox':
         return (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {question.options.choices.map((choice) => (
-              <label key={choice} className="flex items-center space-x-2">
+              <label key={choice} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
                 <input
                   type="checkbox"
                   value={choice}
@@ -86,9 +89,9 @@ export const Question: React.FC<QuestionProps> = ({
                     }
                     onChange(newValue);
                   }}
-                  className="text-blue-500 focus:ring-blue-500"
+                  className="w-5 h-5 text-primary-500 border-gray-300 rounded focus:ring-primary-500"
                 />
-                <span>{choice}</span>
+                <span className="ml-3 text-gray-700">{choice}</span>
               </label>
             ))}
           </div>
@@ -100,13 +103,20 @@ export const Question: React.FC<QuestionProps> = ({
   };
 
   return (
-    <div className="mb-6">
-      <h3 className="text-lg font-medium mb-2">{question.title}</h3>
+    <div className="mb-8 p-6 bg-white rounded-lg shadow-sm">
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">{question.title}</h3>
       {question.description && (
-        <p className="text-gray-600 mb-4">{question.description}</p>
+        <p className="text-gray-600 mb-6">{question.description}</p>
       )}
       {renderInput()}
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      {error && (
+        <p className="mt-2 text-sm text-red-600 flex items-center">
+          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {error}
+        </p>
+      )}
     </div>
   );
 }; 
