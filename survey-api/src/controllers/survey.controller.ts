@@ -15,29 +15,45 @@ export const getQuestions = async (req: Request, res: Response) => {
 }
 
 export const submitResponse = async (req: Request, res: Response) => {
+    const { responses } = req.body;
+
+    if (!Array.isArray(responses)) {
+        return res.status(400).json({ error: "Invalid request format" });
+    }
+
+    const transaction = await sequelize.transaction();
+
     try {
-        const { responses } = req.body;
-
-        if (!Array.isArray(responses)) {
-            return res.status(500).json({ error: "Invalid request format" });
-        }
-        const transaction = await sequelize.transaction();
-
+        // Create the submission first
         const submission = await SurveySubmission.create({
             submittedAt: new Date()
         }, { transaction });
 
-        await Promise.all(responses.map(response => {
+        // Create all responses in parallel
+        const responsePromises = responses.map(response => 
             SurveyResponse.create({
-                submissionId: submission.isSoftDeleted,
+                submissionId: submission.id, // Fixed: using submission.id instead of isSoftDeleted
                 questionId: response.questionId,
                 answer: response.answer
             }, { transaction })
-        }));
+        );
+
+        await Promise.all(responsePromises);
+        
+        // Commit the transaction
         await transaction.commit();
-        return res.json({ message: 'Survey submitted successfully', submissionId: submission.id });
+        
+        return res.json({ 
+            message: 'Survey submitted successfully', 
+            submissionId: submission.id 
+        });
     } catch (error) {
-        console.error('Error submitting questions:', error);
-        res.status(500).json({ error: 'Failed to submit response' });
+        // Rollback the transaction in case of error
+        await transaction.rollback();
+        console.error('Error submitting survey:', error);
+        res.status(500).json({ 
+            error: 'Failed to submit survey response',
+            details: error instanceof Error ? error.message : 'Unknown error'
+        });
     }
 }
